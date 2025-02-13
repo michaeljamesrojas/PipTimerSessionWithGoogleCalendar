@@ -75,6 +75,8 @@
         try {
           statusDiv.textContent = "Saving to calendar...";
           await pipService.saveToCalendar();
+          pipService.stopPictureInPicture();
+          saveButton.disabled = true;
           statusDiv.textContent = "Session saved to calendar successfully!";
         } catch (error) {
           statusDiv.textContent = `Failed to save to calendar: ${error.message}`;
