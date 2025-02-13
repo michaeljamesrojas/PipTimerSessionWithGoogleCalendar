@@ -102,6 +102,26 @@ export class PipService {
         }
     }
 
+    async enterPictureInPicture() {
+        try {
+            if (!this.startTime) {
+                throw new Error('Timer is not running');
+            }
+
+            if (document.pictureInPictureElement) {
+                await document.exitPictureInPicture();
+            }
+
+            // Ensure video is playing
+            await this.video.play();
+            
+            // Request PiP (timer is already running)
+            await this.video.requestPictureInPicture();
+        } catch (error) {
+            throw new Error(`Failed to enter Picture in Picture: ${error.message}`);
+        }
+    }
+
     stopPictureInPicture() {
         if (document.pictureInPictureElement) {
             document.exitPictureInPicture();

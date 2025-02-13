@@ -36,9 +36,65 @@
         margin: 10px 20px;
         color: #666;
       }
+      .timer-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin: 20px;
+      }
+      .timer-display {
+        font-size: 48px;
+        font-family: Arial, sans-serif;
+        color: #333;
+      }
+      .timer-display.inactive {
+        color: #999;
+      }
+      .pip-toggle {
+        width: 32px;
+        height: 32px;
+        padding: 6px;
+        border: none;
+        border-radius: 4px;
+        background-color: #f8f9fa;
+        cursor: pointer;
+        display: none;
+        align-items: center;
+        justify-content: center;
+      }
+      .pip-toggle:hover {
+        background-color: #e9ecef;
+      }
+      .pip-toggle.visible {
+        display: flex;
+      }
+      .pip-toggle svg {
+        width: 20px;
+        height: 20px;
+      }
     </style>
   </head>
   <body>
+    <div class="timer-container">
+      <div class="timer-display" id="mainTimer">00:00:00</div>
+      <button
+        class="pip-toggle"
+        id="pipToggle"
+        title="Enter Picture-in-Picture"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <rect x="2" y="2" width="20" height="20" rx="2" />
+          <rect x="12" y="12" width="8" height="8" rx="1" />
+        </svg>
+      </button>
+    </div>
     <div class="controls">
       <button id="startPiP" class="btn">Start Timer</button>
       <button id="stopPiP" class="btn">Stop Timer</button>
@@ -54,12 +110,29 @@
       const stopButton = document.getElementById("stopPiP");
       const saveButton = document.getElementById("saveToCalendar");
       const statusDiv = document.getElementById("status");
+      const mainTimer = document.getElementById("mainTimer");
+      const pipToggle = document.getElementById("pipToggle");
+
+      // Update main timer display
+      function updateMainTimer() {
+        if (pipService.startTime) {
+          const elapsedTime = Date.now() - pipService.startTime;
+          mainTimer.textContent = pipService.formatTime(elapsedTime);
+          mainTimer.classList.remove("inactive");
+          requestAnimationFrame(updateMainTimer);
+        } else {
+          mainTimer.textContent = "00:00:00";
+          mainTimer.classList.add("inactive");
+        }
+      }
 
       startButton.addEventListener("click", async () => {
         try {
           await pipService.startPictureInPicture();
           saveButton.disabled = false;
           statusDiv.textContent = "Timer started";
+          updateMainTimer(); // Start updating main timer
+          pipToggle.classList.add("visible"); // Show PiP toggle when timer starts
         } catch (error) {
           statusDiv.textContent = `Error: ${error.message}`;
         }
@@ -69,6 +142,9 @@
         pipService.stopPictureInPicture();
         saveButton.disabled = true;
         statusDiv.textContent = "Timer stopped";
+        mainTimer.textContent = "00:00:00"; // Reset main timer
+        mainTimer.classList.add("inactive");
+        pipToggle.classList.remove("visible"); // Hide PiP toggle
       });
 
       saveButton.addEventListener("click", async () => {
@@ -78,8 +154,35 @@
           pipService.stopPictureInPicture();
           saveButton.disabled = true;
           statusDiv.textContent = "Session saved to calendar successfully!";
+          mainTimer.textContent = "00:00:00"; // Reset main timer
+          mainTimer.classList.add("inactive");
+          pipToggle.classList.remove("visible"); // Hide PiP toggle
         } catch (error) {
           statusDiv.textContent = `Failed to save to calendar: ${error.message}`;
+        }
+      });
+
+      // Handle PiP window close
+      document.addEventListener("leavepictureinpicture", () => {
+        if (pipService.startTime) {
+          // Timer is still running, just PiP was closed
+          updateMainTimer(); // Keep updating main timer
+          pipToggle.classList.add("visible"); // Show PiP toggle
+        }
+      });
+
+      // Handle entering PiP
+      document.addEventListener("enterpictureinpicture", () => {
+        pipToggle.classList.remove("visible"); // Hide PiP toggle when in PiP mode
+      });
+
+      // PiP toggle button
+      pipToggle.addEventListener("click", async () => {
+        try {
+          await pipService.enterPictureInPicture();
+          statusDiv.textContent = "Entered Picture-in-Picture mode";
+        } catch (error) {
+          statusDiv.textContent = `Error: ${error.message}`;
         }
       });
     </script>
