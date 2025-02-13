@@ -3,20 +3,89 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Picture in Picture</title>
-    <link rel="stylesheet" href="/src/presentation/styles/styles.css" />
+    <title>PiP Timer</title>
+    <style>
+      .controls {
+        margin: 20px;
+        display: flex;
+        gap: 10px;
+      }
+      .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        background-color: #007bff;
+        color: white;
+        font-size: 16px;
+      }
+      .btn:hover {
+        background-color: #0056b3;
+      }
+      .btn:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+      }
+      #saveToCalendar {
+        background-color: #28a745;
+      }
+      #saveToCalendar:hover {
+        background-color: #218838;
+      }
+      .status {
+        margin: 10px 20px;
+        color: #666;
+      }
+    </style>
   </head>
   <body>
-    <div class="container">
-      <h1>Picture in Picture</h1>
-      <div class="video-container">
-        <video id="video" controls height="360" width="640" hidden></video>
-      </div>
-      <div class="button-container">
-        <button id="selectButton">Select Screen</button>
-        <button id="startButton">Start Picture in Picture</button>
-      </div>
+    <div class="controls">
+      <button id="startPiP" class="btn">Start Timer</button>
+      <button id="stopPiP" class="btn">Stop Timer</button>
+      <button id="saveToCalendar" class="btn" disabled>Save to Calendar</button>
     </div>
-    <script type="module" src="/src/presentation/app.js"></script>
+    <div id="status" class="status"></div>
+
+    <!-- Load environment variables -->
+    <script src="env.js"></script>
+    <script>
+      console.log("Environment variables:", window.env);
+    </script>
+
+    <script type="module">
+      import { PipService } from "./src/domain/pip/PipService.js";
+
+      const pipService = new PipService();
+      const startButton = document.getElementById("startPiP");
+      const stopButton = document.getElementById("stopPiP");
+      const saveButton = document.getElementById("saveToCalendar");
+      const statusDiv = document.getElementById("status");
+
+      startButton.addEventListener("click", async () => {
+        try {
+          await pipService.startPictureInPicture();
+          saveButton.disabled = false;
+          statusDiv.textContent = "Timer started";
+        } catch (error) {
+          statusDiv.textContent = `Error: ${error.message}`;
+        }
+      });
+
+      stopButton.addEventListener("click", () => {
+        pipService.stopPictureInPicture();
+        saveButton.disabled = true;
+        statusDiv.textContent = "Timer stopped";
+      });
+
+      saveButton.addEventListener("click", async () => {
+        try {
+          statusDiv.textContent = "Saving to calendar...";
+          await pipService.saveToCalendar();
+          statusDiv.textContent = "Session saved to calendar successfully!";
+        } catch (error) {
+          statusDiv.textContent = `Failed to save to calendar: ${error.message}`;
+        }
+      });
+    </script>
   </body>
 </html>

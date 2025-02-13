@@ -1,0 +1,25 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main # or your default branch
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Create env.js
+        run: |
+          echo "window.env = {" > env.js
+          echo "  GOOGLE_API_KEY: '${{ secrets.GOOGLE_API_KEY }}'," >> env.js
+          echo "  GOOGLE_CLIENT_ID: '${{ secrets.GOOGLE_CLIENT_ID }}'" >> env.js
+          echo "};" >> env.js
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@4.1.5
+        with:
+          branch: gh-pages
+          folder: .
