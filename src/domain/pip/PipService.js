@@ -118,9 +118,8 @@ export class PipService {
 
     async initializeCalendarService() {
         if (!this.calendarService) {
-            const { GoogleCalendarService } = await import('/src/domain/calendar/GoogleCalendarService.js');
+            const { GoogleCalendarService } = await import('../../domain/calendar/GoogleCalendarService.js');
             this.calendarService = new GoogleCalendarService();
-            await this.calendarService.initializeGoogleApi();
         }
     }
 
