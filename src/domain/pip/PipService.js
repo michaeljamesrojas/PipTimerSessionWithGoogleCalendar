@@ -144,7 +144,7 @@ export class PipService {
         }
     }
 
-    async saveToCalendar() {
+    async saveToCalendar(title, colorId = '5') {
         if (!this.startTime) {
             throw new Error('No active session to save');
         }
@@ -153,7 +153,7 @@ export class PipService {
             await this.initializeCalendarService();
             await this.calendarService.authenticate();
             const endTime = Date.now();
-            await this.calendarService.createCalendarEvent(this.startTime, endTime);
+            await this.calendarService.createCalendarEvent(this.startTime, endTime, title, colorId);
             return true;
         } catch (error) {
             console.error('Failed to save to calendar:', error);

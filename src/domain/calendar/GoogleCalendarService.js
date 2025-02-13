@@ -128,12 +128,12 @@ export class GoogleCalendarService {
         });
     }
 
-    async createCalendarEvent(startTime, endTime) {
+    async createCalendarEvent(startTime, endTime, title = 'PiP Timer Session', colorId = '5') {
         try {
             const duration = this.formatDuration(endTime - startTime);
             
             const event = {
-                summary: 'PiP Timer Session',
+                summary: title,
                 description: `Total duration: ${duration}`,
                 start: {
                     dateTime: new Date(startTime).toISOString(),
@@ -143,7 +143,7 @@ export class GoogleCalendarService {
                     dateTime: new Date(endTime).toISOString(),
                     timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
                 },
-                colorId: '5' // 5 is yellow/banana color
+                colorId: colorId
             };
 
             const response = await gapi.client.calendar.events.insert({
