@@ -29,12 +29,17 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
-      - name: Create env.js
+      - name: Inject environment variables
         run: |
-          echo "window.env = {" > env.js
-          echo "  GOOGLE_API_KEY: '${{ secrets.GOOGLE_API_KEY }}'," >> env.js
-          echo "  GOOGLE_CLIENT_ID: '${{ secrets.GOOGLE_CLIENT_ID }}'" >> env.js
-          echo "};" >> env.js
+          # Create a temporary file
+          cat > src/config.js << 'EOL'
+          export const config = {
+              googleCalendar: {
+                  apiKey: '${{ secrets.GOOGLE_API_KEY }}',
+                  clientId: '${{ secrets.GOOGLE_CLIENT_ID }}'
+              }
+          };
+          EOL
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

@@ -13,7 +13,6 @@ A Picture-in-Picture timer application that allows you to track time and save yo
 
 - A modern web browser that supports Picture-in-Picture mode
 - A Google Cloud Project with Calendar API enabled
-- A local development server (e.g., Live Server VS Code extension)
 
 ## Setup
 
@@ -32,42 +31,40 @@ A Picture-in-Picture timer application that allows you to track time and save yo
      - Click "Create Credentials" > "OAuth client ID"
      - Choose "Web application"
      - Add authorized JavaScript origins:
-       - `http://localhost` (or your local development URL)
-       - `http://127.0.0.1`
-       - Your production domain (if any)
+       - Your GitHub Pages URL (e.g., `https://yourusername.github.io`)
+       - Your local development URL (if needed)
    - Set up the OAuth consent screen:
      - Go to "APIs & Services" > "OAuth consent screen"
      - Choose "External"
      - Fill in the required information
      - Add your Google account email as a test user
 
-2. Configure environment:
+2. Configure GitHub repository:
 
-   - Copy `.env.example` to `.env`:
-     ```bash
-     cp .env.example .env
-     ```
-   - Update `.env` with your Google credentials:
-     ```
-     GOOGLE_API_KEY=your_api_key_here
-     GOOGLE_CLIENT_ID=your_client_id_here
-     ```
+   - Go to repository Settings > Secrets and variables > Actions
+   - Add the following secrets:
+     - `GOOGLE_API_KEY`: Your Google API key
+     - `GOOGLE_CLIENT_ID`: Your Google OAuth client ID
 
+3. Enable GitHub Pages:
+   - Go to repository Settings > Pages
+   - Set up GitHub Pages to deploy from the `gh-pages` branch
+
+## Development
+
+For local development:
+
+1. Clone the repository
+2. Create a local `src/config.js` with your development credentials:
+   ```javascript
+   export const config = {
+     googleCalendar: {
+       apiKey: "your_api_key_here",
+       clientId: "your_client_id_here",
+     },
+   };
+   ```
 3. Start a local development server:
-   - Using VS Code Live Server extension:
-     - Install Live Server extension
-     - Right-click on `index.html`
-     - Select "Open with Live Server"
-   - Or use any other static file server
-
-## Development Setup
-
-1. Run the setup script to create your local environment:
-
-   - Windows: `setup.bat`
-   - Unix/Linux/Mac: `./setup.sh`
-
-2. Start a local development server:
    - Using VS Code Live Server extension:
      - Install Live Server extension
      - Right-click on `index.html`
@@ -76,32 +73,11 @@ A Picture-in-Picture timer application that allows you to track time and save yo
 
 ## Deployment
 
-To deploy to GitHub Pages:
+The application automatically deploys to GitHub Pages when you push to the main branch. The deployment process:
 
-1. Fork or clone this repository
-2. Set up GitHub repository secrets:
-   - Go to repository Settings > Secrets and variables > Actions
-   - Add the following secrets:
-     - `GOOGLE_API_KEY`: Your Google API key
-     - `GOOGLE_CLIENT_ID`: Your Google OAuth client ID
-3. Enable GitHub Pages:
-   - Go to repository Settings > Pages
-   - Select the `gh-pages` branch as the source
-4. Update Google Cloud Console:
-   - Add your GitHub Pages URL (e.g., `https://yourusername.github.io/your-repo`) to the authorized JavaScript origins
-
-The GitHub Action will automatically deploy your site when you push to the main branch.
-
-## Usage
-
-1. Open the application in your browser
-2. Click "Start Timer" to begin a new session
-   - A Picture-in-Picture window will appear with the timer
-3. The timer will show the elapsed time of your session
-4. When you want to save the session:
-   - Click "Save to Calendar"
-   - Authorize the application (first time only)
-   - The session will be saved to your Google Calendar with duration details
+1. Injects your Google credentials from GitHub Secrets
+2. Builds and deploys the site to the `gh-pages` branch
+3. Makes the site available at your GitHub Pages URL
 
 ## Project Structure
 
@@ -114,19 +90,29 @@ The GitHub Action will automatically deploy your site when you push to the main 
 │   │       └── GoogleCalendarService.js  # Calendar integration
 │   └── config.js                  # Configuration management
 ├── index.html                     # Main application page
-├── .env                          # Environment variables (not committed)
-├── .env.example                  # Environment template
-└── .gitignore                    # Git ignore rules
+└── .github/
+    └── workflows/
+        └── deploy.yml             # GitHub Actions workflow
 ```
 
 ## Security Notes
 
-- Never commit the `.env` file to version control
-- Keep your API keys and Client ID secure
+- API keys and Client ID are injected during build
 - For production:
-  - Set up environment variables in your hosting platform
   - Restrict API key usage in Google Cloud Console
   - Add your production domain to authorized origins
+  - Set up proper OAuth consent screen
+
+## Usage
+
+1. Open the application in your browser
+2. Click "Start Timer" to begin a new session
+   - A Picture-in-Picture window will appear with the timer
+3. The timer will show the elapsed time of your session
+4. When you want to save the session:
+   - Click "Save to Calendar"
+   - Authorize the application (first time only)
+   - The session will be saved to your Google Calendar with duration details
 
 ## Troubleshooting
 
@@ -137,8 +123,8 @@ The GitHub Action will automatically deploy your site when you push to the main 
 2. Authentication fails:
 
    - Check if your origins are properly configured in Google Cloud Console
-   - Verify your API key and Client ID in `.env`
-   - Make sure you're running the app through a web server (not opening the file directly)
+   - Verify your GitHub Secrets are set correctly
+   - Make sure you're accessing the site through the correct domain
 
 3. Black screen in PiP window:
 

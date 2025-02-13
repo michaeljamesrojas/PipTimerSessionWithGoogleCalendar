@@ -4,6 +4,7 @@
 .env.*.local
 env.js
 env.*.js
+src/config.js
 
 # IDE files
 .vscode/

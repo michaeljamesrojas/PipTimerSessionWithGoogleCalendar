@@ -2,15 +2,18 @@ import { config } from '../../config.js';
 
 export class GoogleCalendarService {
     constructor() {
-        console.log('GoogleCalendarService constructor - config:', config);
-        console.log('GoogleCalendarService constructor - window.env:', window.env);
+        // Safely log config presence without exposing values
+        console.log('GoogleCalendarService constructor - config keys:', 
+            config.googleCalendar ? ['apiKey', 'clientId'].filter(key => !!config.googleCalendar[key]) : []);
+        console.log('GoogleCalendarService constructor - env keys:', 
+            window.env ? Object.keys(window.env) : []);
         
         this.API_KEY = config.googleCalendar.apiKey;
         this.CLIENT_ID = config.googleCalendar.clientId;
         
-        console.log('GoogleCalendarService initialized with:', {
-            API_KEY: this.API_KEY,
-            CLIENT_ID: this.CLIENT_ID
+        console.log('GoogleCalendarService initialized with required credentials:', {
+            API_KEY: this.API_KEY ? '[HIDDEN]' : undefined,
+            CLIENT_ID: this.CLIENT_ID ? '[HIDDEN]' : undefined
         });
         
         this.SCOPES = 'https://www.googleapis.com/auth/calendar.events';
@@ -39,8 +42,8 @@ export class GoogleCalendarService {
                         resolve();
                     };
                     script.onerror = (error) => {
-                        console.error('Failed to load Google API client library:', error);
-                        reject(error);
+                        console.error('Failed to load Google API client library');
+                        reject(new Error('Script loading failed'));
                     };
                     document.head.appendChild(script);
                 });
@@ -55,8 +58,8 @@ export class GoogleCalendarService {
                         resolve();
                     };
                     script.onerror = (error) => {
-                        console.error('Failed to load Google Identity Services:', error);
-                        reject(error);
+                        console.error('Failed to load Google Identity Services');
+                        reject(new Error('Script loading failed'));
                     };
                     document.head.appendChild(script);
                 });
@@ -98,7 +101,7 @@ export class GoogleCalendarService {
                 this.gisInited = true;
                 console.log('Google API initialization complete');
             } catch (error) {
-                console.error('Google API initialization failed:', error);
+                console.error('Google API initialization failed:', error.message);
                 this.initPromise = null;
                 throw new Error(`Failed to initialize Google API: ${error.message}`);
             }
