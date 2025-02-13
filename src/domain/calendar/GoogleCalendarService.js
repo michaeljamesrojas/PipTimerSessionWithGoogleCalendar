@@ -142,7 +142,8 @@ export class GoogleCalendarService {
                 end: {
                     dateTime: new Date(endTime).toISOString(),
                     timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
-                }
+                },
+                colorId: '5' // 5 is yellow/banana color
             };
 
             const response = await gapi.client.calendar.events.insert({
