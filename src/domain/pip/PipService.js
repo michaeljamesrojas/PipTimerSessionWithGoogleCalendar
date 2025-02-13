@@ -56,8 +56,8 @@ export class PipService {
         return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }
 
-    drawTimer() {
-        if (!this.startTime) return;
+    drawTimer(forcedElapsedTime = null) {
+        if (!this.startTime && forcedElapsedTime === null) return;
         
         // Draw background with border
         this.ctx.fillStyle = '#000000';
@@ -67,7 +67,7 @@ export class PipService {
         this.ctx.strokeRect(2, 2, this.canvas.width - 4, this.canvas.height - 4);
         
         // Calculate elapsed time
-        const elapsedTime = Date.now() - this.startTime;
+        const elapsedTime = forcedElapsedTime !== null ? forcedElapsedTime : Date.now() - this.startTime;
         const timeString = this.formatTime(elapsedTime);
         
         // Draw time with improved visibility
@@ -77,8 +77,10 @@ export class PipService {
         this.ctx.textBaseline = 'middle';
         this.ctx.fillText(timeString, this.canvas.width / 2, this.canvas.height / 2);
         
-        // Request next frame
-        this.animationFrameId = requestAnimationFrame(() => this.drawTimer());
+        // Request next frame only if we're not using forced time
+        if (forcedElapsedTime === null) {
+            this.animationFrameId = requestAnimationFrame(() => this.drawTimer());
+        }
     }
 
     async startPictureInPicture() {

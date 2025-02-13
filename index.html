@@ -291,6 +291,24 @@
           height: 16px;
         }
       }
+
+      .mobile-warning {
+        display: none;
+        background-color: #fff3cd;
+        border: 1px solid #ffeeba;
+        color: #856404;
+        padding: 12px;
+        margin: 10px 0;
+        border-radius: 5px;
+        text-align: center;
+        font-size: 14px;
+      }
+
+      @media (max-width: 600px) {
+        .mobile-warning {
+          display: block;
+        }
+      }
     </style>
   </head>
   <body>
@@ -312,6 +330,10 @@
           <rect x="12" y="12" width="8" height="8" rx="1" />
         </svg>
       </button>
+    </div>
+    <div class="mobile-warning" id="mobileWarning">
+      ⚠️ For best experience on mobile: Keep Chrome in the foreground and avoid
+      switching apps. The timer may pause when Chrome is in the background.
     </div>
     <div class="controls">
       <button id="startPiP" class="btn">Start Timer</button>
@@ -383,6 +405,56 @@
       const statusDiv = document.getElementById("status");
       const mainTimer = document.getElementById("mainTimer");
       const pipToggle = document.getElementById("pipToggle");
+      const mobileWarning = document.getElementById("mobileWarning");
+
+      // Detect if user is on mobile
+      const isMobile =
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          navigator.userAgent
+        );
+
+      // Handle page visibility changes
+      let visibilityInterval;
+
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+          // Page is hidden (background)
+          if (isMobile && pipService.startTime) {
+            // Start a slower interval update when in background on mobile
+            visibilityInterval = setInterval(() => {
+              if (pipService.startTime) {
+                const elapsedTime = Date.now() - pipService.startTime;
+                pipService.drawTimer(elapsedTime);
+              }
+            }, 1000); // Update every second when in background
+          }
+        } else {
+          // Page is visible again
+          if (visibilityInterval) {
+            clearInterval(visibilityInterval);
+            visibilityInterval = null;
+          }
+        }
+      });
+
+      // Update mobile warning based on Chrome version
+      if (isMobile) {
+        const chromeVersion = parseInt(
+          (navigator.userAgent.match(/Chrome\/([0-9]+)/) || [])[1] || 0
+        );
+        if (chromeVersion < 89) {
+          // Chrome versions before 89 had more PiP limitations
+          mobileWarning.textContent =
+            "⚠️ Please update Chrome for better Picture-in-Picture support";
+        }
+      }
+
+      // Clean up interval on page unload
+      window.addEventListener("unload", () => {
+        if (visibilityInterval) {
+          clearInterval(visibilityInterval);
+        }
+      });
 
       // Update main timer display
       function updateMainTimer() {
