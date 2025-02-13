@@ -120,6 +120,7 @@ export class PipService {
         if (!this.calendarService) {
             const { GoogleCalendarService } = await import('../../domain/calendar/GoogleCalendarService.js');
             this.calendarService = new GoogleCalendarService();
+            await this.calendarService.initializeGoogleApi();
         }
     }
 
@@ -136,7 +137,7 @@ export class PipService {
             return true;
         } catch (error) {
             console.error('Failed to save to calendar:', error);
-            throw error;
+            throw new Error(`Failed to save to calendar: ${error.message}`);
         }
     }
 } 
