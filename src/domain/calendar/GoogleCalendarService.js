@@ -2,8 +2,17 @@ import { config } from '../../config.js';
 
 export class GoogleCalendarService {
     constructor() {
+        console.log('GoogleCalendarService constructor - config:', config);
+        console.log('GoogleCalendarService constructor - window.env:', window.env);
+        
         this.API_KEY = config.googleCalendar.apiKey;
         this.CLIENT_ID = config.googleCalendar.clientId;
+        
+        console.log('GoogleCalendarService initialized with:', {
+            API_KEY: this.API_KEY,
+            CLIENT_ID: this.CLIENT_ID
+        });
+        
         this.SCOPES = 'https://www.googleapis.com/auth/calendar.events';
         this.tokenClient = null;
         this.gapiInited = false;
@@ -18,53 +27,78 @@ export class GoogleCalendarService {
 
         this.initPromise = (async () => {
             try {
+                console.log('Starting Google API initialization');
+                
                 // Load the Google API client library
                 await new Promise((resolve, reject) => {
+                    console.log('Loading Google API client library...');
                     const script = document.createElement('script');
                     script.src = 'https://apis.google.com/js/api.js';
-                    script.onload = resolve;
-                    script.onerror = reject;
+                    script.onload = () => {
+                        console.log('Google API client library loaded');
+                        resolve();
+                    };
+                    script.onerror = (error) => {
+                        console.error('Failed to load Google API client library:', error);
+                        reject(error);
+                    };
                     document.head.appendChild(script);
                 });
 
                 // Load the Google Identity Services library
                 await new Promise((resolve, reject) => {
+                    console.log('Loading Google Identity Services...');
                     const script = document.createElement('script');
                     script.src = 'https://accounts.google.com/gsi/client';
-                    script.onload = resolve;
-                    script.onerror = reject;
+                    script.onload = () => {
+                        console.log('Google Identity Services loaded');
+                        resolve();
+                    };
+                    script.onerror = (error) => {
+                        console.error('Failed to load Google Identity Services:', error);
+                        reject(error);
+                    };
                     document.head.appendChild(script);
                 });
 
                 // Wait for gapi to be available
                 if (!window.gapi) {
+                    console.error('gapi not available after loading script');
                     throw new Error('Failed to load Google API client');
                 }
 
+                console.log('Loading gapi client...');
                 await new Promise((resolve) => {
                     gapi.load('client', resolve);
                 });
 
+                console.log('Initializing gapi client...');
                 await gapi.client.init({
                     apiKey: this.API_KEY,
                     discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'],
                 });
+                console.log('gapi client initialized');
 
                 // Wait for google.accounts to be available
                 if (!window.google?.accounts?.oauth2) {
+                    console.error('google.accounts.oauth2 not available after loading script');
                     throw new Error('Failed to load Google Identity Services');
                 }
 
+                console.log('Initializing token client...');
                 this.tokenClient = google.accounts.oauth2.initTokenClient({
                     client_id: this.CLIENT_ID,
                     scope: this.SCOPES,
                     callback: '', // Will be set later
                     prompt: 'consent'
                 });
+                console.log('Token client initialized');
 
                 this.gapiInited = true;
                 this.gisInited = true;
+                console.log('Google API initialization complete');
             } catch (error) {
+                console.error('Google API initialization failed:', error);
                 this.initPromise = null;
                 throw new Error(`Failed to initialize Google API: ${error.message}`);
             }
@@ -74,13 +108,17 @@ export class GoogleCalendarService {
     }
 
     async authenticate() {
+        console.log('Starting authentication...');
         await this.initializeGoogleApi();
+        console.log('Google API initialized, requesting access token...');
 
         return new Promise((resolve, reject) => {
             this.tokenClient.callback = async (response) => {
                 if (response.error) {
+                    console.error('Authentication failed:', response.error);
                     reject(response);
                 }
+                console.log('Authentication successful');
                 resolve(response);
             };
             this.tokenClient.requestAccessToken();
