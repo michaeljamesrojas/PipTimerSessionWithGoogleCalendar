@@ -64,31 +64,28 @@ export class PipService {
         return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }
 
-    drawTimer(forcedElapsedTime = null) {
-        if (!this.startTime && forcedElapsedTime === null) return;
-        
-        // Draw background with border
-        this.ctx.fillStyle = '#000000';
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-        this.ctx.strokeStyle = '#ffffff';
-        this.ctx.lineWidth = 2;
-        this.ctx.strokeRect(2, 2, this.canvas.width - 4, this.canvas.height - 4);
-        
-        // Calculate elapsed time
-        const elapsedTime = forcedElapsedTime !== null ? forcedElapsedTime : Date.now() - this.startTime;
-        const timeString = this.formatTime(elapsedTime);
-        
-        // Draw time with improved visibility
+    drawTimer(forcedElapsedTime = null, title = "") {
+        const elapsedTime = forcedElapsedTime || (Date.now() - this.startTime);
+        const formattedTime = this.formatTime(elapsedTime);
+
+        // Clear the canvas
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        // Draw the timer text
+        this.ctx.font = '46px Arial';
         this.ctx.fillStyle = '#ffffff';
-        this.ctx.font = '48px Arial';
         this.ctx.textAlign = 'center';
-        this.ctx.textBaseline = 'middle';
-        this.ctx.fillText(timeString, this.canvas.width / 2, this.canvas.height / 2);
-        
-        // Request next frame only if we're not using forced time
-        if (forcedElapsedTime === null) {
-            this.animationFrameId = requestAnimationFrame(() => this.drawTimer());
+        this.ctx.fillText(formattedTime, this.canvas.width / 2, this.canvas.height / 2);
+
+        // Draw the title text
+        if (title) {
+            this.ctx.font = '16px Arial';
+            this.ctx.fillStyle = '#cccccc';
+            this.ctx.fillText(title, this.canvas.width / 2, this.canvas.height / 2 + 40);
         }
+
+        // Request the next frame
+        this.animationFrameId = requestAnimationFrame(() => this.drawTimer(null, title));
     }
 
     async startPictureInPicture() {

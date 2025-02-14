@@ -592,7 +592,7 @@
             visibilityInterval = setInterval(() => {
               if (pipService.startTime) {
                 const elapsedTime = Date.now() - pipService.startTime;
-                pipService.drawTimer(elapsedTime);
+                pipService.drawTimer(elapsedTime, currentTitle);
               }
             }, 1000); // Update every second when in background
           }
@@ -624,18 +624,31 @@
         }
       });
 
-      // Update main timer display
-      function updateMainTimer() {
+      // Update main timer display with title
+      let currentTitle = "";
+
+      function updateMainTimer(title = "") {
         if (pipService.startTime) {
           const elapsedTime = Date.now() - pipService.startTime;
           mainTimer.textContent = pipService.formatTime(elapsedTime);
           mainTimer.classList.remove("inactive");
-          requestAnimationFrame(updateMainTimer);
+          pipService.drawTimer(elapsedTime, title || currentTitle);
+          requestAnimationFrame(() => updateMainTimer(title || currentTitle));
         } else {
           mainTimer.textContent = "00:00:00";
           mainTimer.classList.add("inactive");
         }
       }
+
+      // Add event listener for title input changes
+      const titleInput = document.getElementById("eventTitle");
+      titleInput.addEventListener("input", () => {
+        if (pipService.startTime) {
+          currentTitle = titleInput.value.trim() || titleInput.placeholder;
+          const elapsedTime = Date.now() - pipService.startTime;
+          pipService.drawTimer(elapsedTime, currentTitle);
+        }
+      });
 
       // Event listeners for user login/logout
       window.addEventListener("userLoggedIn", (event) => {
@@ -688,10 +701,11 @@
 
       startButton.addEventListener("click", async () => {
         try {
+          currentTitle = titleInput.value.trim() || titleInput.placeholder;
           await pipService.startPictureInPicture();
           updateSaveButtonState();
           statusDiv.textContent = "Timer started";
-          updateMainTimer();
+          updateMainTimer(currentTitle);
           pipToggle.classList.add("visible");
         } catch (error) {
           statusDiv.textContent = `Error: ${error.message}`;
