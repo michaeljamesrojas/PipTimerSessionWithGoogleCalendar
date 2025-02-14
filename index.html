@@ -13,6 +13,24 @@
         font-family: Arial, sans-serif;
       }
 
+      /* Navigation */
+      .nav {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-bottom: 20px;
+      }
+
+      .nav a {
+        color: #007bff;
+        text-decoration: none;
+        font-size: 14px;
+      }
+
+      .nav a:hover {
+        text-decoration: underline;
+      }
+
       /* Timer styles */
       .timer-container {
         display: flex;
@@ -312,6 +330,10 @@
     </style>
   </head>
   <body>
+    <nav class="nav">
+      <a href="./home.html">Home</a>
+      <a href="./privacy.html">Privacy Policy</a>
+    </nav>
     <div class="timer-container">
       <div class="timer-display" id="mainTimer">00:00:00</div>
       <button
