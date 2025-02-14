@@ -327,12 +327,125 @@
           display: block;
         }
       }
+
+      /* User section */
+      .user-section {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .user-profile {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 8px;
+        border-radius: 20px;
+        background-color: #f8f9fa;
+        cursor: pointer;
+        position: relative;
+      }
+
+      .user-profile:hover {
+        background-color: #e9ecef;
+      }
+
+      .user-email {
+        font-size: 14px;
+        color: #495057;
+      }
+
+      .user-avatar {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background-color: #dee2e6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        color: #495057;
+        text-transform: uppercase;
+      }
+
+      .user-menu {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        margin-top: 4px;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        display: none;
+        z-index: 1000;
+      }
+
+      .user-menu.show {
+        display: block;
+      }
+
+      .user-menu-item {
+        padding: 8px 16px;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+
+      .user-menu-item:hover {
+        background-color: #f8f9fa;
+      }
+
+      .sign-in-btn {
+        padding: 6px 12px;
+        border: 1px solid #007bff;
+        border-radius: 4px;
+        background: none;
+        color: #007bff;
+        cursor: pointer;
+        font-size: 14px;
+      }
+
+      .sign-in-btn:hover {
+        background-color: #f8f9fa;
+      }
+
+      @media (max-width: 600px) {
+        .nav {
+          flex-wrap: wrap;
+          gap: 10px;
+        }
+
+        .user-section {
+          width: 100%;
+          justify-content: center;
+          margin-left: 0;
+        }
+
+        .user-email {
+          max-width: 150px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
     </style>
   </head>
   <body>
     <nav class="nav">
       <a href="./home.html">Home</a>
       <a href="./privacy.html">Privacy Policy</a>
+      <div class="user-section">
+        <button id="signInButton" class="sign-in-btn">
+          Sign in with Google
+        </button>
+        <div id="userProfile" class="user-profile" style="display: none">
+          <div id="userAvatar" class="user-avatar"></div>
+          <span id="userEmail" class="user-email"></span>
+          <div id="userMenu" class="user-menu">
+            <div id="signOutButton" class="user-menu-item">Sign out</div>
+          </div>
+        </div>
+      </div>
     </nav>
     <div class="timer-container">
       <div class="timer-display" id="mainTimer">00:00:00</div>
@@ -428,6 +541,39 @@
       const mainTimer = document.getElementById("mainTimer");
       const pipToggle = document.getElementById("pipToggle");
       const mobileWarning = document.getElementById("mobileWarning");
+      const signInButton = document.getElementById("signInButton");
+      const userProfile = document.getElementById("userProfile");
+      const userAvatar = document.getElementById("userAvatar");
+      const userEmail = document.getElementById("userEmail");
+      const userMenu = document.getElementById("userMenu");
+      const signOutButton = document.getElementById("signOutButton");
+
+      // Check authentication state on page load
+      async function checkAuthState() {
+        try {
+          await pipService.ensureCalendarService();
+          const user = pipService.getCurrentUser();
+          if (user) {
+            signInButton.style.display = "none";
+            userProfile.style.display = "flex";
+            userEmail.textContent = user.email;
+            userAvatar.textContent = user.email[0];
+            saveButton.disabled = !pipService.startTime;
+          } else {
+            signInButton.style.display = "block";
+            userProfile.style.display = "none";
+            saveButton.disabled = true;
+          }
+        } catch (error) {
+          console.error("Failed to check auth state:", error);
+          signInButton.style.display = "block";
+          userProfile.style.display = "none";
+          saveButton.disabled = true;
+        }
+      }
+
+      // Call checkAuthState when page loads
+      checkAuthState();
 
       // Detect if user is on mobile
       const isMobile =
@@ -491,13 +637,62 @@
         }
       }
 
+      // Event listeners for user login/logout
+      window.addEventListener("userLoggedIn", (event) => {
+        const user = event.detail;
+        signInButton.style.display = "none";
+        userProfile.style.display = "flex";
+        userEmail.textContent = user.email;
+        userAvatar.textContent = user.email[0];
+        saveButton.disabled = !pipService.startTime;
+      });
+
+      window.addEventListener("userLoggedOut", () => {
+        signInButton.style.display = "block";
+        userProfile.style.display = "none";
+        saveButton.disabled = true;
+      });
+
+      signInButton.addEventListener("click", async () => {
+        try {
+          await pipService.signIn();
+        } catch (error) {
+          console.error("Sign in failed:", error);
+        }
+      });
+
+      signOutButton.addEventListener("click", async () => {
+        try {
+          await pipService.signOut();
+        } catch (error) {
+          console.error("Sign out failed:", error);
+        }
+      });
+
+      // User profile click (toggle menu)
+      userProfile.addEventListener("click", (event) => {
+        event.stopPropagation();
+        userMenu.classList.toggle("show");
+      });
+
+      // Close menu when clicking outside
+      document.addEventListener("click", () => {
+        userMenu.classList.remove("show");
+      });
+
+      // Update save button state
+      function updateSaveButtonState() {
+        saveButton.disabled =
+          !pipService.startTime || !pipService.isAuthenticated();
+      }
+
       startButton.addEventListener("click", async () => {
         try {
           await pipService.startPictureInPicture();
-          saveButton.disabled = false;
+          updateSaveButtonState();
           statusDiv.textContent = "Timer started";
-          updateMainTimer(); // Start updating main timer
-          pipToggle.classList.add("visible"); // Show PiP toggle when timer starts
+          updateMainTimer();
+          pipToggle.classList.add("visible");
         } catch (error) {
           statusDiv.textContent = `Error: ${error.message}`;
         }
@@ -505,11 +700,11 @@
 
       stopButton.addEventListener("click", () => {
         pipService.stopPictureInPicture();
-        saveButton.disabled = true;
+        updateSaveButtonState();
         statusDiv.textContent = "Timer stopped";
-        mainTimer.textContent = "00:00:00"; // Reset main timer
+        mainTimer.textContent = "00:00:00";
         mainTimer.classList.add("inactive");
-        pipToggle.classList.remove("visible"); // Hide PiP toggle
+        pipToggle.classList.remove("visible");
       });
 
       // Color dropdown functionality
@@ -552,13 +747,17 @@
           const title = titleInput.value.trim() || titleInput.placeholder;
           await pipService.saveToCalendar(title, selectedColorValue);
           pipService.stopPictureInPicture();
-          saveButton.disabled = true;
+          updateSaveButtonState();
           statusDiv.textContent = "Session saved to calendar successfully!";
-          mainTimer.textContent = "00:00:00"; // Reset main timer
+          mainTimer.textContent = "00:00:00";
           mainTimer.classList.add("inactive");
-          pipToggle.classList.remove("visible"); // Hide PiP toggle
+          pipToggle.classList.remove("visible");
         } catch (error) {
           statusDiv.textContent = `Failed to save to calendar: ${error.message}`;
+          if (error.message.includes("Please sign in again")) {
+            signInButton.style.display = "block";
+            userProfile.style.display = "none";
+          }
         }
       });
 

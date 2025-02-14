@@ -6,6 +6,7 @@ export class PipService {
         this.startTime = null;
         this.animationFrameId = null;
         this.calendarService = null;
+        this.calendarInitPromise = null;
         
         // Set canvas size
         this.canvas.width = 320;
@@ -19,6 +20,13 @@ export class PipService {
         // Draw initial frame and set up stream
         this.drawEmptyFrame();
         this.setupVideoStream();
+
+        // Initialize calendar service immediately
+        this.calendarInitPromise = this.initializeCalendarService().catch(error => {
+            console.error('Failed to initialize calendar service:', error);
+            // Don't throw here, let the error be handled by the caller
+            return null;
+        });
     }
 
     setupVideoStream() {
@@ -139,11 +147,64 @@ export class PipService {
     }
 
     async initializeCalendarService() {
-        if (!this.calendarService) {
+        if (this.calendarService) {
+            return this.calendarService;
+        }
+
+        try {
+            console.log('Initializing calendar service...');
             const { GoogleCalendarService } = await import('../../domain/calendar/GoogleCalendarService.js');
             this.calendarService = new GoogleCalendarService();
             await this.calendarService.initializeGoogleApi();
+            console.log('Calendar service initialized');
+            return this.calendarService;
+        } catch (error) {
+            console.error('Calendar service initialization failed:', error);
+            throw error;
         }
+    }
+
+    async ensureCalendarService() {
+        try {
+            if (this.calendarInitPromise) {
+                await this.calendarInitPromise;
+            }
+            if (!this.calendarService) {
+                await this.initializeCalendarService();
+            }
+            return this.calendarService;
+        } catch (error) {
+            console.error('Failed to ensure calendar service:', error);
+            throw error;
+        }
+    }
+
+    async signIn(forcePrompt = false) {
+        try {
+            const calendarService = await this.ensureCalendarService();
+            await calendarService.authenticate(forcePrompt);
+        } catch (error) {
+            console.error('Sign in failed:', error);
+            throw error;
+        }
+    }
+
+    async signOut() {
+        try {
+            const calendarService = await this.ensureCalendarService();
+            await calendarService.signOut();
+        } catch (error) {
+            console.error('Sign out failed:', error);
+            throw error;
+        }
+    }
+
+    isAuthenticated() {
+        return this.calendarService?.isAuthenticated() || false;
+    }
+
+    getCurrentUser() {
+        return this.calendarService?.getCurrentUser() || null;
     }
 
     async saveToCalendar(title, colorId = '5') {
@@ -152,10 +213,12 @@ export class PipService {
         }
 
         try {
-            await this.initializeCalendarService();
-            await this.calendarService.authenticate();
+            const calendarService = await this.ensureCalendarService();
+            if (!calendarService.isAuthenticated()) {
+                await this.signIn();
+            }
             const endTime = Date.now();
-            await this.calendarService.createCalendarEvent(this.startTime, endTime, title, colorId);
+            await calendarService.createCalendarEvent(this.startTime, endTime, title, colorId);
             return true;
         } catch (error) {
             console.error('Failed to save to calendar:', error);
