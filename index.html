@@ -490,8 +490,8 @@
           class="color-select-button"
           id="colorSelectButton"
         >
-          <span class="color-dot banana"></span>
-          <span class="color-name">Banana</span>
+          <span class="color-dot peacock"></span>
+          <span class="color-name">Peacock</span>
         </button>
         <div class="color-dropdown" id="colorDropdown">
           <div class="color-option" data-value="1" data-name="Lavender">
@@ -727,7 +727,13 @@
       // Color dropdown functionality
       const colorSelectButton = document.getElementById("colorSelectButton");
       const colorDropdown = document.getElementById("colorDropdown");
-      let selectedColorValue = "5"; // Default to Banana
+      let selectedColorValue = "7"; // Default to Peacock
+
+      // Set initial color button state
+      colorSelectButton.innerHTML = `
+        <span class="color-dot peacock"></span>
+        <span class="color-name">Peacock</span>
+      `;
 
       colorSelectButton.addEventListener("click", () => {
         colorDropdown.classList.toggle("show");
