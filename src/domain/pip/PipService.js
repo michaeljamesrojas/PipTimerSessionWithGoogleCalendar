@@ -68,8 +68,9 @@ export class PipService {
         const elapsedTime = forcedElapsedTime || (Date.now() - this.startTime);
         const formattedTime = this.formatTime(elapsedTime);
 
-        // Clear the canvas
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        // Clear the canvas and draw black background
+        this.ctx.fillStyle = '#000000';
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
         // Draw the timer text
         this.ctx.font = '46px Arial';
@@ -80,7 +81,7 @@ export class PipService {
         // Draw the title text
         if (title) {
             this.ctx.font = '16px Arial';
-            this.ctx.fillStyle = '#cccccc';
+            this.ctx.fillStyle = '#ffffff'; // Changed to white for better visibility
             this.ctx.fillText(title, this.canvas.width / 2, this.canvas.height / 2 + 40);
         }
 

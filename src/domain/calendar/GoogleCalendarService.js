@@ -336,7 +336,7 @@ export class GoogleCalendarService {
         return this.currentUser;
     }
 
-    async createCalendarEvent(startTime, endTime, title = 'PiP Timer Session', colorId = '5') {
+    async createCalendarEvent(startTime, endTime, title = 'PiP Timer Session', colorId = '7') {
         try {
             if (!this.isAuthenticated()) {
                 throw new Error('Not authenticated');
