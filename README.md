@@ -6,6 +6,7 @@ A Picture-in-Picture timer application that allows you to track time and save yo
 
 - Picture-in-Picture timer display
 - Google Calendar integration for session logging
+- Progressive Web App (PWA) - installable on desktop and mobile devices
 - Clean, minimalist UI
 - No dependencies - pure JavaScript
 
@@ -105,11 +106,14 @@ The application automatically deploys to GitHub Pages when you push to the main 
 
 ## Usage
 
-1. Open the application in your browser
-2. Click "Start Timer" to begin a new session
+1. Install the application (optional):
+   - On desktop: Click the install icon in your browser's address bar
+   - On mobile: Tap "Add to Home Screen" in your browser menu
+2. Open the application in your browser
+3. Click "Start Timer" to begin a new session
    - A Picture-in-Picture window will appear with the timer
-3. The timer will show the elapsed time of your session
-4. When you want to save the session:
+4. The timer will show the elapsed time of your session
+5. When you want to save the session:
    - Click "Save to Calendar"
    - Authorize the application (first time only)
    - The session will be saved to your Google Calendar with duration details
