@@ -7,18 +7,31 @@ class App {
         this.selectButton = document.getElementById('selectButton');
         this.startButton = document.getElementById('startButton');
         
+        this.handleSelectScreen = this.handleSelectScreen.bind(this);
+        this.handleStartPiP = this.handleStartPiP.bind(this);
+        this.handleLeavePiP = this.handleLeavePiP.bind(this);
+        
         this.initializeEventListeners();
     }
 
     initializeEventListeners() {
-        this.selectButton.addEventListener('click', () => this.handleSelectScreen());
-        this.startButton.addEventListener('click', () => this.handleStartPiP());
+        this.selectButton.addEventListener('click', this.handleSelectScreen);
+        this.startButton.addEventListener('click', this.handleStartPiP);
+        this.video.addEventListener('leavepictureinpicture', this.handleLeavePiP);
+    }
 
-        // Clean up when leaving picture in picture mode
-        this.video.addEventListener('leavepictureinpicture', () => {
-            this.pipService.stopScreenCapture();
-            this.video.srcObject = null;
-        });
+    cleanup() {
+        this.selectButton.removeEventListener('click', this.handleSelectScreen);
+        this.startButton.removeEventListener('click', this.handleStartPiP);
+        this.video.removeEventListener('leavepictureinpicture', this.handleLeavePiP);
+        this.pipService.stopScreenCapture();
+        this.video.srcObject = null;
+    }
+
+    handleLeavePiP() {
+        this.pipService.stopScreenCapture();
+        this.video.srcObject = null;
+        this.startButton.disabled = true;
     }
 
     async handleSelectScreen() {
@@ -42,7 +55,13 @@ class App {
     }
 }
 
-// Initialize the application
+let app;
 document.addEventListener('DOMContentLoaded', () => {
-    new App();
+    app = new App();
+});
+
+window.addEventListener('unload', () => {
+    if (app) {
+        app.cleanup();
+    }
 }); 

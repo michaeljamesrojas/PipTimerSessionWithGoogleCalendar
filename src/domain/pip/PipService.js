@@ -7,6 +7,7 @@ export class PipService {
         this.animationFrameId = null;
         this.calendarService = null;
         this.calendarInitPromise = null;
+        this.mediaStream = null;
         
         // Set canvas size
         this.canvas.width = 320;
@@ -87,6 +88,25 @@ export class PipService {
 
         // Request the next frame
         this.animationFrameId = requestAnimationFrame(() => this.drawTimer(null, title));
+    }
+
+    async startScreenCapture() {
+        if (this.mediaStream) {
+            this.stopScreenCapture();
+        }
+        
+        this.mediaStream = await navigator.mediaDevices.getDisplayMedia({ 
+            video: true,
+            audio: false
+        });
+        return this.mediaStream;
+    }
+
+    stopScreenCapture() {
+        if (this.mediaStream) {
+            this.mediaStream.getTracks().forEach(track => track.stop());
+            this.mediaStream = null;
+        }
     }
 
     async startPictureInPicture() {
