@@ -8,6 +8,7 @@ export class PipService {
         this.calendarService = null;
         this.calendarInitPromise = null;
         this.mediaStream = null;
+        this.reappearPipInterval = null;
         
         // Set canvas size
         this.canvas.width = 320;
@@ -122,6 +123,12 @@ export class PipService {
             this.startTime = Date.now();
             this.drawTimer();
             
+            this.reappearPipInterval = setInterval(async () => {
+                console.log('hello world');
+                if (document.pictureInPictureElement) return;
+                await this.enterPictureInPicture();
+            }, 3000);
+            
             // Request PiP
             await this.video.requestPictureInPicture();
         } catch (error) {
@@ -158,6 +165,11 @@ export class PipService {
         if (this.animationFrameId) {
             cancelAnimationFrame(this.animationFrameId);
             this.animationFrameId = null;
+        }
+        
+        if (this.reappearPipInterval) {
+            clearInterval(this.reappearPipInterval);
+            this.reappearPipInterval = null;
         }
         
         this.startTime = null;
