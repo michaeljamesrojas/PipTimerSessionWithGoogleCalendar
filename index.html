@@ -825,8 +825,13 @@
       // PiP toggle button
       pipToggle.addEventListener("click", async () => {
         try {
-          await pipService.enterPictureInPicture();
-          statusDiv.textContent = "Entered Picture-in-Picture mode";
+          if (document.pictureInPictureElement) {
+            await document.exitPictureInPicture();
+            statusDiv.textContent = "Exited Picture-in-Picture mode";
+          } else {
+            await pipService.enterPictureInPicture();
+            statusDiv.textContent = "Entered Picture-in-Picture mode";
+          }
         } catch (error) {
           statusDiv.textContent = `Error: ${error.message}`;
         }
