@@ -100,10 +100,32 @@ export class PipService {
       this.canvas.height / 2
     );
 
-    // Draw the title text
+    // Draw colored line if title exists
     if (title) {
+      const colorMap = {
+        1: "#7986cb", // Lavender
+        2: "#33b679", // Sage
+        3: "#8e24aa", // Grape
+        4: "#e67c73", // Flamingo
+        5: "#f6bf26", // Banana
+        6: "#f4511e", // Tangerine
+        7: "#039be5", // Peacock
+        8: "#616161", // Graphite
+        9: "#3f51b5", // Blueberry
+        10: "#0b8043", // Basil
+        11: "#d50000", // Tomato
+      };
+      const savedColor = localStorage.getItem("timerColor") || "7";
+      this.ctx.strokeStyle = colorMap[savedColor] || "#039be5";
+      this.ctx.lineWidth = 5;
+      this.ctx.beginPath();
+      this.ctx.lineTo(this.canvas.width * 0.1, this.canvas.height / 2 + 20);
+      this.ctx.lineTo(this.canvas.width * 0.9, this.canvas.height / 2 + 20);
+      this.ctx.stroke();
+
+      // Draw the title text
       this.ctx.font = "16px Arial";
-      this.ctx.fillStyle = "#ffffff"; // Changed to white for better visibility
+      this.ctx.fillStyle = "#ffffff";
       this.ctx.fillText(
         title,
         this.canvas.width / 2,
