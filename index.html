@@ -575,6 +575,24 @@
       const userMenu = document.getElementById("userMenu");
       const signOutButton = document.getElementById("signOutButton");
 
+      // Update all button states
+      function updateButtonStates() {
+        const hasExistingTimer =
+          localStorage.getItem("timerStartTime") !== null;
+
+        // Update start button
+        startButton.textContent = hasExistingTimer
+          ? "Continue Timer"
+          : "Start Timer";
+        startButton.style.backgroundColor = hasExistingTimer
+          ? "#FFA500"
+          : "#007bff";
+
+        // Update save button
+        saveButton.disabled =
+          !pipService.startTime || !pipService.isAuthenticated();
+      }
+
       // Check authentication state on page load
       async function checkAuthState() {
         try {
@@ -585,17 +603,15 @@
             userProfile.style.display = "flex";
             userEmail.textContent = user.email;
             userAvatar.textContent = user.email[0];
-            saveButton.disabled = !pipService.startTime;
           } else {
             signInButton.style.display = "block";
             userProfile.style.display = "none";
-            saveButton.disabled = true;
           }
+          updateButtonStates();
         } catch (error) {
           console.error("Failed to check auth state:", error);
           signInButton.style.display = "block";
           userProfile.style.display = "none";
-          saveButton.disabled = true;
         }
       }
 
@@ -684,13 +700,11 @@
         userProfile.style.display = "flex";
         userEmail.textContent = user.email;
         userAvatar.textContent = user.email[0];
-        saveButton.disabled = !pipService.startTime;
       });
 
       window.addEventListener("userLoggedOut", () => {
         signInButton.style.display = "block";
         userProfile.style.display = "none";
-        saveButton.disabled = true;
       });
 
       signInButton.addEventListener("click", async () => {
@@ -730,7 +744,7 @@
         try {
           currentTitle = titleInput.value.trim() || titleInput.placeholder;
           await pipService.startPictureInPicture();
-          updateSaveButtonState();
+          updateButtonStates();
           statusDiv.textContent = "Timer started";
           updateMainTimer(currentTitle);
           pipToggle.classList.add("visible");
@@ -741,7 +755,7 @@
 
       stopButton.addEventListener("click", () => {
         pipService.stopPictureInPicture();
-        updateSaveButtonState();
+        updateButtonStates();
         statusDiv.textContent = "Timer stopped";
         mainTimer.textContent = "00:00:00";
         mainTimer.classList.add("inactive");
@@ -794,7 +808,7 @@
           const title = titleInput.value.trim() || titleInput.placeholder;
           await pipService.saveToCalendar(title, selectedColorValue);
           pipService.stopPictureInPicture();
-          updateSaveButtonState();
+          updateButtonStates();
           statusDiv.textContent = "Session saved to calendar successfully!";
           mainTimer.textContent = "00:00:00";
           mainTimer.classList.add("inactive");

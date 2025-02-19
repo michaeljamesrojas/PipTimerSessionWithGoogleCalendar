@@ -31,6 +31,13 @@ export class PipService {
         return null;
       }
     );
+
+    // Check for existing timer in localStorage
+    const savedStartTime = localStorage.getItem("timerStartTime");
+    if (savedStartTime) {
+      this.startTime = parseInt(savedStartTime);
+      this.drawTimer();
+    }
   }
 
   setupVideoStream() {
@@ -134,22 +141,16 @@ export class PipService {
         await document.exitPictureInPicture();
       }
 
-      // Ensure video is playing
       await this.video.play();
 
-      // Start the timer immediately
-      this.startTime = Date.now();
+      if (!this.startTime) {
+        this.startTime = Date.now();
+        localStorage.setItem("timerStartTime", this.startTime.toString());
+      }
       this.drawTimer();
 
-      this.reappearPipInterval = setInterval(async () => {
-        // console.log("hello world");
-        // if (document.pictureInPictureElement) return;
-        // await document.body.click();
-        // await this.video.play();
-        // await this.enterPictureInPicture();
-      }, 3000);
+      this.reappearPipInterval = setInterval(async () => {}, 3000);
 
-      // Request PiP
       await this.video.requestPictureInPicture();
     } catch (error) {
       this.stopPictureInPicture();
@@ -192,6 +193,7 @@ export class PipService {
       this.reappearPipInterval = null;
     }
 
+    localStorage.removeItem("timerStartTime");
     this.startTime = null;
     this.drawEmptyFrame();
   }
@@ -276,6 +278,7 @@ export class PipService {
         title,
         colorId
       );
+      localStorage.removeItem("timerStartTime");
       return true;
     } catch (error) {
       console.error("Failed to save to calendar:", error);
