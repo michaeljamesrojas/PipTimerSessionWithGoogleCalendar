@@ -36,7 +36,8 @@ export class PipService {
     const savedStartTime = localStorage.getItem("timerStartTime");
     if (savedStartTime) {
       this.startTime = parseInt(savedStartTime);
-      this.drawTimer();
+      const savedTitle = localStorage.getItem("timerTitle") || "";
+      this.drawTimer(null, savedTitle);
     }
   }
 
@@ -135,7 +136,7 @@ export class PipService {
     }
   }
 
-  async startPictureInPicture() {
+  async startPictureInPicture(title = "") {
     try {
       if (document.pictureInPictureElement) {
         await document.exitPictureInPicture();
@@ -146,8 +147,9 @@ export class PipService {
       if (!this.startTime) {
         this.startTime = Date.now();
         localStorage.setItem("timerStartTime", this.startTime.toString());
+        localStorage.setItem("timerTitle", title);
       }
-      this.drawTimer();
+      this.drawTimer(null, title);
 
       this.reappearPipInterval = setInterval(async () => {}, 3000);
 
@@ -194,6 +196,8 @@ export class PipService {
     }
 
     localStorage.removeItem("timerStartTime");
+    localStorage.removeItem("timerTitle");
+    localStorage.removeItem("timerColor");
     this.startTime = null;
     this.drawEmptyFrame();
   }
@@ -279,6 +283,8 @@ export class PipService {
         colorId
       );
       localStorage.removeItem("timerStartTime");
+      localStorage.removeItem("timerTitle");
+      localStorage.removeItem("timerColor");
       return true;
     } catch (error) {
       console.error("Failed to save to calendar:", error);

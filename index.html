@@ -575,7 +575,7 @@
       const userMenu = document.getElementById("userMenu");
       const signOutButton = document.getElementById("signOutButton");
 
-      // Update all button states
+      // Update all button states and restore saved values
       function updateButtonStates() {
         const hasExistingTimer =
           localStorage.getItem("timerStartTime") !== null;
@@ -591,6 +591,33 @@
         // Update save button
         saveButton.disabled =
           !pipService.startTime || !pipService.isAuthenticated();
+
+        // Restore saved title and color if timer exists
+        if (hasExistingTimer) {
+          const savedTitle = localStorage.getItem("timerTitle");
+          const savedColor = localStorage.getItem("timerColor");
+
+          if (savedTitle) {
+            titleInput.value = savedTitle;
+            currentTitle = savedTitle;
+          }
+
+          if (savedColor) {
+            const colorOption = document.querySelector(
+              `.color-option[data-value="${savedColor}"]`
+            );
+            if (colorOption) {
+              const name = colorOption.dataset.name;
+              const colorDot =
+                colorOption.querySelector(".color-dot").className;
+              selectedColorValue = savedColor;
+              colorSelectButton.innerHTML = `
+                <span class="${colorDot}"></span>
+                <span class="color-name">${name}</span>
+              `;
+            }
+          }
+        }
       }
 
       // Check authentication state on page load
@@ -743,7 +770,8 @@
       startButton.addEventListener("click", async () => {
         try {
           currentTitle = titleInput.value.trim() || titleInput.placeholder;
-          await pipService.startPictureInPicture();
+          await pipService.startPictureInPicture(currentTitle);
+          localStorage.setItem("timerColor", selectedColorValue);
           updateButtonStates();
           statusDiv.textContent = "Timer started";
           updateMainTimer(currentTitle);
