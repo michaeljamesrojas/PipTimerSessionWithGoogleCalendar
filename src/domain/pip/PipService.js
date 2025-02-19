@@ -142,9 +142,11 @@ export class PipService {
       this.drawTimer();
 
       this.reappearPipInterval = setInterval(async () => {
-        console.log("hello world");
-        if (document.pictureInPictureElement) return;
-        await this.enterPictureInPicture();
+        // console.log("hello world");
+        // if (document.pictureInPictureElement) return;
+        // await document.body.click();
+        // await this.video.play();
+        // await this.enterPictureInPicture();
       }, 3000);
 
       // Request PiP
