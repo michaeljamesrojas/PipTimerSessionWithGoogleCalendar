@@ -715,6 +715,7 @@
       titleInput.addEventListener("input", () => {
         if (pipService.startTime) {
           currentTitle = titleInput.value.trim() || titleInput.placeholder;
+          localStorage.setItem("timerTitle", currentTitle);
           const elapsedTime = Date.now() - pipService.startTime;
           pipService.drawTimer(elapsedTime, currentTitle);
         }
@@ -825,6 +826,9 @@
             <span class="${colorDot}"></span>
             <span class="color-name">${name}</span>
           `;
+          if (pipService.startTime) {
+            localStorage.setItem("timerColor", value);
+          }
           colorDropdown.classList.remove("show");
         }
       });
